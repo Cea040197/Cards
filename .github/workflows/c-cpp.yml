@@ -1,0 +1,25 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: secret1
+      run: CC="clang"
+    - name: secret2
+      run: CFLAGS="-ferror-limit=1 -gdwarf-4 -ggdb3 -O0 -std=c11 -Wall -Werror -Wextra -Wno-gnu-folding-constant -Wno-sign-compare -Wno-unused-parameter -Wno-unused-variable -Wno-unused-but-set-variable -Wshadow"
+    - name: secret3
+      run: LDLIBS="-lcrypt -lcs50 -lm"
+    - name: main
+      run: cd libcs50-11.0.3; sudo make install; cd ../;
+    - name: build
+      run: make cards
