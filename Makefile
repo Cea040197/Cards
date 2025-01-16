@@ -9,4 +9,4 @@ OBJS = $(SRCS:.c=.o)
 
 
 $(EXE): $(OBJS)
-     $(CC) $(CFLAGS) -o $@ $(OBJS) $(LDLIBS)
+	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDLIBS)
