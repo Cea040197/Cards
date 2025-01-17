@@ -1,4 +1,4 @@
-name: Project Build Status
+name: Automated Build Status
 
 on:
   push:
