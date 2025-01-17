@@ -85,7 +85,6 @@ int shuffleDeck(card d[], int s)
 int initializeDeck(card d[], int s)
 {
     char fv[] = {'A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K'};
-    int wP[] = {14, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13};
     int bjP[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10};
     char st[] = {'S', 'H', 'C', 'D'};
     int ci = 0;
