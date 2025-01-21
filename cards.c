@@ -1,98 +1,91 @@
 #define _DEFAULT_SOURCE // needed to use srandom() and random()
 #include <cs50.h>       // functions: get_string(), get_int(); also string datatype
 #include <ctype.h>      // functions: toupper(), tolower(), isalpha(), isdigit(), isalnum()
-#include <math.h>       // functions: floor(), ceiling(), round(), power(), sqrt()
+#include <math.h>       // functions: floor(), ceil(), round(), pow(), sqrt()
 #include <stdio.h>      // functions: printf()
 #include <stdlib.h>     // functions: srandom() and random()
-#include <string.h>     // functions: strcomp(), strcopy(), strlen()
+#include <string.h>     // functions: strcmp(), strcpy(), strlen()
 #include <time.h>       // functions: time()  [to seed srandom()]
 
+
 // define Constants
-const int SIZE = 52; // define size of deck - used in declaring and looping through deck (array of 52 cards)
+const int SIZE = 52; // size of the deck
+
 
 // create datatype (card)
 typedef struct
 {
-    char faceValue;  // use: 2, 3, 4, 5, 6, 7, 8, 9, T, J, Q, K, A
-    char suit;       // use: S, H, D, C
-    int blkJkPoints; // used to store value for game Black Jack
+    char faceValue;  // 2,3,4,5,6,7,8,9,T,J,Q,K,A
+    char suit;       // S,H,D,C
+    int blkJkPoints; // used for blackjack value
 } card;
 
-// prototype functions here
-int shuffleDeck(card d[], int s);    // not yet defined - your job!
-int initializeDeck(card d[], int s); // loads regular deck of playing cards
-void printDeck(card d[], int s);     // used for testing only - you won't use in your game
-void printCard(card c);              // prints one card
-string printSuit(char s);            // returns emoji for suit instead of  char
-string printBlank(void);             // returns rectangle to represent face down card
-void dealCards(card d[], int s);
 
+// prototypes
+int shuffleDeck(card d[], int s);
+int initializeDeck(card d[], int s);
+void printDeck(card d[], int s);
+void printCard(card c);
+string printSuit(char s);
+string printBlank(void);
+void dealCards(card d[], int s);
+string playBlackJack(void);
+int getHandValue(card d[]);
+void hitCards(void);
+
+
+// global variables
 card deck[SIZE];
 card dealer[5];
 card player[5];
+int handSize = 2;      // player starts with 2 cards
+int dealerHandSize = 2;
+int deckPlacement = 4; // after dealing 2+2, next card is deck[4]
 
+
+// main function
 int main(void)
 {
-    // call intialize
-    initializeDeck(deck, SIZE);
-    shuffleDeck(deck, SIZE);
-   // intDeck(deck, SIZE); // call printDeck to test that initialize works as intended
-
-    // example of printing a face-down card and then a face-up card
-    dealCards(deck,2);
-
-
-    //**TO DO**  shuffle - you write a function to shuffle
-    //    then call printDeck again to test your sufffle
-
-    // call function to execute playing the game - these will include
-    // things like...
-    //   1) dealing a hand to all players
-    //   2) taking turns
-    //   3) checking for winner/loser
+    // runs the blackjack game and prints outcome
+    string outcome = playBlackJack();
+    printf("%s\n", outcome);
 }
 
-// Functions Needed to create a card game
-//  1 - initialize deck (load all 52 cards)
-//  2 - shuffle deck
-//  3 - deal
-//  4 - one or more functions to "play" your game/taking turns/checking winner or loser etc.
-//  another big challenge will be how will you have your program keep track of each players
-//  hand of cards?  this starts with how you will "move cards from the deck to player hands"
-//  during your dealing process - there's a few ways to solve this - but you will need to
-//  really think it through.
 
+// shuffles deck by swapping each card with a random position
 int shuffleDeck(card d[], int s)
 {
     int randNum;
     card temp;
     srand(time(NULL));
-    // printf("printing random\n\n");
 
-    for (int i = 0; i <= SIZE - 1; i++)
+
+    for (int i = 0; i < s; i++)
     {
-
-        randNum = ((random() / (double) RAND_MAX) * SIZE - 1) + 1;
+        randNum = ((random() / (double) RAND_MAX) * s - 1) + 1;
         temp = d[i];
         d[i] = d[randNum];
-
         d[randNum] = temp;
     }
     printf("\n");
     return 0;
 }
 
+
+// initializes deck with standard cards
 int initializeDeck(card d[], int s)
 {
-    char fv[] = {'A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K'};
-    int bjP[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10};
-    char st[] = {'S', 'H', 'C', 'D'};
+    char fv[] = {'A','2','3','4','5','6','7','8','9','T','J','Q','K'};
+    int bjP[] = {1,2,3,4,5,6,7,8,9,10,10,10,10};
+    char st[] = {'S','H','C','D'};
     int ci = 0;
+
+
     for (int si = 0; si < 4; si++)
     {
         for (int fi = 0; fi < 13; fi++)
         {
-            ci = ((si * 13) + fi);
+            ci = (si * 13) + fi;
             if (ci > s)
             {
                 return -99;
@@ -103,31 +96,20 @@ int initializeDeck(card d[], int s)
         }
     }
     return 0;
-} // end funciton
-
-void printDeck(card d[], int s) // prints out the face value & suit of a deck of s cards
-{
-    for (int i = 0; i < s; i++)
-    {
-        // printf("%s%s, ",d[i].faceValue, printSuit(d[i].suit));
-        printCard(d[i]);
-        if (i > 0 && ((i + 1) % 13) == 0)
-        {
-            printf("\n");
-        }
-    }
-    return;
 }
 
+
+// prints a single card
 void printCard(card c)
 {
-    if (c.faceValue != 'X') // don't print blank cards
+    if (c.faceValue != 'X')
     {
         printf("%c%s ", c.faceValue, printSuit(c.suit));
     }
-
 }
 
+
+// returns suit as unicode
 string printSuit(char s)
 {
     if (s == 'S')
@@ -152,36 +134,193 @@ string printSuit(char s)
     }
 }
 
+
+// returns a blank (face-down) card
 string printBlank(void)
 {
-    return "\U00002593 "; // returns unicode of solid rectangle (face down card)
+    return "\U00002593 ";
 }
 
+
+// deals two cards each to dealer and player
 void dealCards(card d[], int s)
 {
-    // TODO: deal card
-    // printf("suit %c, facevalue: %c", d[0].suit, d[0].faceValue);
-
     int foo = 0;
     int bar = 1;
 
+
     for (int i = 0; i < 2; i++)
     {
-        foo = foo + 2;
-        bar = bar + 2;
         dealer[i] = d[foo];
         player[i] = d[bar];
-
+        foo += 2;
+        bar += 2;
     }
 
 
-    printf("\n");
-    printf("Players cards: ");
+    printf("\nPlayers cards: ");
     printCard(player[0]);
     printCard(player[1]);
-    printf("\n");
-    printf("dealers cards: ");
+    printf("\nDealers cards: ");
+    // first card hidden
     printf("%s", printBlank());
     printCard(dealer[1]);
     printf("\n");
+}
+
+
+// calculates hand value for either player or dealer
+int getHandValue(card d[])
+{
+    int total = 0;
+
+
+    if (d == player)
+    {
+        for (int i = 0; i < handSize; i++)
+        {
+            total += d[i].blkJkPoints;
+        }
+    }
+    else if (d == dealer)
+    {
+        for (int i = 0; i < dealerHandSize; i++)
+        {
+            total += d[i].blkJkPoints;
+        }
+    }
+    return total;
+}
+
+
+// adds a card to the player's hand and checks if it's an ace
+void hitCards(void)
+{
+    handSize++;
+    deckPlacement++;
+
+
+    player[handSize - 1] = deck[deckPlacement];
+
+
+    printf("\nYou drew: ");
+    printCard(player[handSize - 1]);
+    printf("\n");
+
+
+    if (player[handSize - 1].faceValue == 'A')
+    {
+        int aceChoice = get_int("You've drawn an Ace! Do you want it to count as 1 or 11? ");
+        if (aceChoice == 1)
+        {
+            player[handSize - 1].blkJkPoints = 1;
+        }
+        else if (aceChoice == 11)
+        {
+            player[handSize - 1].blkJkPoints = 11;
+        }
+    }
+
+
+    printf("Your hand now: ");
+    for (int i = 0; i < handSize; i++)
+    {
+        printCard(player[i]);
+    }
+    printf("\n");
+
+
+    int newTotal = getHandValue(player);
+    printf("Your new hand value is: %i\n", newTotal);
+}
+
+
+// runs the blackjack game
+string playBlackJack(void)
+{
+    initializeDeck(deck, SIZE);
+    shuffleDeck(deck, SIZE);
+    dealCards(deck, 2);
+
+
+    int playerTotal = getHandValue(player);
+    printf("Your current hand value is: %i\n", playerTotal);
+
+
+    string choice = get_string("Would you like to hit? (y/n) ");
+    while (choice[0] == 'y' || choice[0] == 'Y')
+    {
+        hitCards();
+        playerTotal = getHandValue(player);
+        if (playerTotal > 21)
+        {
+            return "You busted! You lose.";
+        }
+        choice = get_string("Would you like to hit again? (y/n) ");
+    }
+
+
+    while (getHandValue(dealer) < 17)
+    {
+        dealerHandSize++;
+        deckPlacement++;
+        dealer[dealerHandSize - 1] = deck[deckPlacement];
+
+
+        if (dealer[dealerHandSize - 1].faceValue == 'A')
+        {
+            dealer[dealerHandSize - 1].blkJkPoints = 11;
+            if (getHandValue(dealer) > 21)
+            {
+                dealer[dealerHandSize - 1].blkJkPoints = 1;
+            }
+        }
+
+
+        printf("\nDealer draws: ");
+        printCard(dealer[dealerHandSize - 1]);
+        printf("\nDealer's hand is now: ");
+        for (int i = 0; i < dealerHandSize; i++)
+        {
+            printCard(dealer[i]);
+        }
+        printf("\n");
+    }
+
+
+    int dealerTotal = getHandValue(dealer);
+    if (dealerTotal > 21)
+    {
+        return "Dealer busted! You win.";
+    }
+
+
+    playerTotal = getHandValue(player);
+    if (playerTotal > dealerTotal)
+    {
+        return "You win!";
+    }
+    else if (playerTotal < dealerTotal)
+    {
+        return "You lose!";
+    }
+    else
+    {
+        return "It's a tie!";
+    }
+}
+
+
+// prints the entire deck
+void printDeck(card d[], int s)
+{
+    for (int i = 0; i < s; i++)
+    {
+        printCard(d[i]);
+        if (i > 0 && ((i + 1) % 13) == 0)
+        {
+            printf("\n");
+        }
+    }
+    return;
 }
